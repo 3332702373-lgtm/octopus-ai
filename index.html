@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>八爪鱼AI · 3D国漫短剧工作台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0b0f1a;--panel:#121826;--card:#171f31;--input:#1b2438;--bd:#26324a;--pri:#2f7dff;--pri2:#66b3ff;--tx:#dfe7f7;--mu:#8b97ad}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;min-height:100vh;padding-bottom:76px;line-height:1.6}
+header{position:sticky;top:0;z-index:40;background:rgba(18,24,38,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:12px 14px 0}
+.brand{display:flex;align-items:center;gap:9px}
+.logo{width:34px;height:34px;border-radius:9px;background:rgba(47,125,255,.16);color:var(--pri);display:flex;align-items:center;justify-content:center;font-weight:700}
+.brand b{font-size:17px}
+.brand small{display:block;font-size:10px;color:var(--mu);font-weight:400}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:7px 14px;border-radius:9px;background:var(--input);color:var(--mu);border:0;font-size:13px;font-family:inherit}
+.tab.on{background:var(--pri);color:#fff}
+main{padding:14px;max-width:1180px;margin:0 auto}
+.panel{display:none}
+.panel.on{display:block}
+.card{background:var(--panel);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:15px;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--pri);flex:none}
+.sub{font-size:11px;color:var(--mu);margin-bottom:10px}
+label{display:block;font-size:12px;color:var(--mu);margin:10px 0 5px}
+input,select,textarea{width:100%;background:var(--input);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;color:var(--tx);font-size:14px;font-family:inherit;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--pri)}
+textarea{resize:vertical;line-height:1.65}
+.row{display:grid;gap:9px;grid-template-columns:1fr 1fr 1fr}
+button{border:0;border-radius:10px;padding:10px 15px;font-size:14px;font-family:inherit;background:var(--pri);color:#fff;margin:9px 8px 0 0}
+.sec{background:var(--input);color:var(--tx);border:1px solid var(--bd)}
+button:active{opacity:.82}
+.green{background:#16a34a}
+pre{background:#0d1320;border:1px solid var(--bd);border-radius:10px;padding:11px;white-space:pre-wrap;word-break:break-word;font-size:12.5px;line-height:1.75;color:#c3d3ee;margin-top:10px;max-height:340px;overflow:auto}
+.shots{margin-top:12px}
+.shot{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:11px;margin-bottom:9px}
+.shot .top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--pri2);margin-bottom:6px}
+.shot .top .tags{color:var(--mu);font-size:11px}
+.shot p{font-size:13px;margin:3px 0}
+.shot .line{color:#a8b8d4;font-size:12.5px;font-style:italic}
+.shot .btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.shot .btns button{margin:0;font-size:11.5px;padding:6px 11px;border-radius:8px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}
+.three div{aspect-ratio:3/4;background:var(--input);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--mu)}
+.three .add{border-style:dashed}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{padding:5px 11px;border-radius:8px;background:var(--input);color:var(--mu);font-size:12px;border:1px solid var(--bd)}
+.chip.on{background:rgba(47,125,255,.16);color:var(--pri);border-color:rgba(47,125,255,.35)}
+.hscroll{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.asset{flex:none;width:112px;background:var(--card);border:1px solid var(--bd);border-radius:11px;padding:7px;text-align:center}
+.asset .ph{height:62px;border-radius:8px;background:linear-gradient(135deg,#1e2a42,#141b2b);margin-bottom:6px}
+.asset span{font-size:11px;color:var(--mu)}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(18,24,38,.96);backdrop-filter:blur(10px);border-top:1px solid var(--bd);display:flex;justify-content:space-around;padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+.bnav button{background:none;margin:0;color:var(--mu);font-size:10.5px;padding:5px 9px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bnav button.on{color:var(--pri)}
+.bnav .ic{font-size:17px;line-height:1}
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:#1c2740;border:1px solid var(--bd);border-radius:10px;padding:9px 16px;font-size:12.5px;z-index:60;opacity:0;transition:.25s;pointer-events:none;max-width:80%;text-align:center}
+.toast.on{opacity:1}
+.notice{background:rgba(47,125,255,.09);border:1px solid rgba(47,125,255,.25);border-radius:10px;padding:10px;font-size:12px;color:#a9c6f5;margin-top:10px;line-height:1.7}
+@media(min-width:960px){
+  body{padding-bottom:0}
+  #pWork{display:grid;grid-template-columns:1fr 1.65fr;gap:12px;align-items:start}
+  .bnav{display:none}
+  main{padding:18px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">八</div>
+    <div><b>八爪鱼AI</b><small>3D国漫CG短剧 · 一站式工作台</small></div>
+  </div>
+  <nav id="nav"></nav>
+</header>
+
+<main>
+
+<section class="panel on" id="pWork">
+  <div>
+    <div class="card">
+      <h2><span class="dot"></span>一句话创意</h2>
+      <div class="sub">生成剧本、人物卡、分镜脚本</div>
+      <textarea id="idea" rows="4" placeholder="例如：少年闯入上古秘境，邂逅灵族女子，踏上修真逆袭之路">一个关于失忆少女在异世界寻找记忆的故事</textarea>
+      <div class="row">
+        <div><label>题材</label>
+          <select id="theme"><option>仙侠玄幻</option><option>古言江湖</option><option>魔族修真</option><option>悬疑秘境</option><option>都市异能</option></select></div>
+        <div><label>风格</label>
+          <select id="style"><option>清冷仙侠</option><option>热血战斗</option><option>甜虐感情</option><option>悬疑秘境</option></select></div>
+        <div><label>集数</label>
+          <select id="eps"><option>单集短片</option><option>3集短剧</option><option>10集连续</option></select></div>
+      </div>
+      <div class="chips" id="quickChips">
+        <span class="chip on">奇幻冒险</span><span class="chip">治愈成长</span><span class="chip">悬疑推理</span><span class="chip">科幻未来</span><span class="chip">爱情故事</span>
+      </div>
+      <button class="green" style="width:100%" onclick="genScript()">⚡ 生成剧本分镜</button>
+      <div class="notice" id="apiState">正在检查后端…</div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>创意设定</h2>
+      <label>故事背景</label><input id="bg" value="异世界 · 被遗忘的大陆">
+      <label>核心主题</label><input id="core" value="记忆与自我寻找">
+      <label>风格参考</label><input id="refv" value="3D国漫写实CG，冷色月光，体积光">
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2><span class="dot"></span>剧本与分镜</h2>
+      <div class="sub" id="scriptMeta">尚未生成</div>
+      <pre id="scriptOut" style="display:none"></pre>
+      <div class="shots" id="shots"></div>
+      <div style="margin-top:12px">
+        <button class="sec" onclick="copyAll()">复制全部分镜</button>
+        <button class="sec" onclick="addBlankShot()">＋ 手动加一条</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span>资产库</h2>
+      <div class="sub">角色 · 场景 · 道具 · 服装</div>
+      <div class="hscroll" id="assetBar"></div>
+    </div>
+  </div>
+</section>
+
+<section class="panel" id="pChar">
+  <div class="card">
+    <h2><span class="dot"></span>角色三视图生成</h2>
+    <div class="sub">3D国漫仿真CG · 发丝眉毛精细化</div>
+    <div class="row">
+      <div><label>角色</label><select id="chRole" onchange="fillChar()"></select></div>
+      <div><label>服装</label><select id="chCloth" onchange="fillChar()"></select></div>
+      <div><label>镜头</label><select id="chShot" onchange="fillChar()"><option>全身立绘</option><option>半身眉眼特写</option><option>三视图（正/侧/背）</option><option>表情集</option></select></div>
+    </div>
+    <label>正向 Prompt</label>
+    <textarea id="chPos" rows="7"></textarea>
+    <label>负面 Prompt</label>
+    <textarea id="chNeg" rows="4"></textarea>
+    <button onclick="fillChar()">一键重填</button>
+    <button class="sec" onclick="copyEl('chPos')">复制正向词</button>
+    <button class="sec" onclick="copyEl('chNeg')">复制负面词</button>
+    <div class="three"><div>正面</div><div>侧面</div><div class="add">＋ 背面</div></div>
+    <div class="notice">角色定稿后务必用「图生图 + 参考权重 0.6~0.8」锁定人物，后续分镜才不会换脸。</div>
+  </div>
+</section>
+
+<section class="panel" id="pScene">
+  <div class="card">
+    <h2><span class="dot"></span>场景资产生成</h2>
+    <div class="sub">一个场景一张图，可作分镜背景</div>
+    <div class="row">
+      <div><label>场景</label><select id="scPreset" onchange="fillScene()"></select></div>
+      <div><label>光影</label><select id="scLight" onchange="fillScene()"><option>丁达尔柔光</option><option>冷月光</option><option>黄昏暖光</option><option>暗黑魔气</option><option>雨夜霓虹</option></select></div>
+      <div><label>是否有人</label><select id="scWho" onchange="fillScene()"><option>无人空景</option><option>有人物</option></select></div>
+    </div>
+    <label>补充细节</label>
+    <textarea id="scDesc" rows="3" placeholder="例如：远处山峦被雾吞没，地面有积水反光"></textarea>
+    <label>正向 Prompt</label>
+    <textarea id="scPos" rows="6"></textarea>
+    <label>负面 Prompt</label>
+    <textarea id="scNeg" rows="3"></textarea>
+    <button onclick="fillScene()">一键重填</button>
+    <button class="sec" onclick="copyEl('scPos')">复制场景词</button>
+  </div>
+</section>
+
+<section class="panel" id="pVideo">
+  <div class="card">
+    <h2><span class="dot"></span>图生视频</h2>
+    <div class="sub">把分镜图动起来，人物不崩脸</div>
+    <div class="row">
+      <div><label>动作</label><select id="vdPreset" onchange="fillVideo()"></select></div>
+      <div><label>时长</label><select id="vdDur"><option>5s</option><option>8s</option><option>12s</option></select></div>
+      <div><label>画幅</label><select id="vdRatio"><option>16:9</option><option>9:16</option><option>1:1</option></select></div>
+    </div>
+    <label>运动幅度：<span id="mvVal">0.4</span></label>
+    <input type="range" id="mv" min="0.1" max="1" step="0.1" value="0.4" oninput="document.getElementById('mvVal').textContent=this.value;fillVideo()">
+    <label>视频指令</label>
+    <textarea id="vdPrompt" rows="5"></textarea>
+    <button onclick="fillVideo()">一键重填</button>
+    <button class="sec" onclick="copyEl('vdPrompt')">复制指令</button>
+    <div class="notice">先出静态分镜图 → 再图生视频，比纯文生视频人脸稳定得多。</div>
+  </div>
+</section>
+
+<section class="panel" id="pLib">
+  <div class="card">
+    <h2><span class="dot"></span>提示词模板库</h2>
+    <div class="sub">全部可一键复制</div>
+    <div id="libBox"></div>
+  </div>
+</section>
+
+<section class="panel" id="pSet">
+  <div class="card">
+    <h2><span class="dot"></span>后端状态</h2>
+    <div id="setState" class="sub" style="font-size:12.5px"></div>
+    <div class="notice">
+      本站是「前端页面 + 一个后端函数」结构。<br>
+      后端在 <b>/api/script</b>，模型密钥只存在 Vercel 环境变量里，前端看不到密钥。
+    </div>
+  </div>
+  <div class="card">
+    <h2><span class="dot"></span>环境变量（Vercel 后台填）</h2>
+    <pre>LLM_BASE_URL = OpenAI 兼容接口地址
+                 例：https://api.deepseek.com/v1
+LLM_API_KEY  = 你的密钥
+LLM_MODEL    = 模型名
+                 例：deepseek-chat / glm-4.7-flash</pre>
+    <div class="sub" style="margin-top:8px">填完要 Redeploy 一次才生效。</div>
+  </div>
+</section>
+
+</main>
+
+<nav class="bnav" id="bnav"></nav>
+<div class="toast" id="toast"></div>
+
+<script>
+const PREFIX="3D国漫剧CG渲染，仿真东方真人美型，电影级PBR材质，8K超高清，RAW质感，全局光照，柔和体积光，丁达尔光效，景深，次世代建模，细腻皮肤带有自然毛孔纹理，眉毛根根分明，单根眉毛细长清晰，睫毛根根独立可见，发丝一缕一缕独立分层，发丝边缘锐利不粘连，布料褶皱符合物理，金属、玉石、丝绸材质区分明显，光影统一，色彩高级，电影构图";
+
+const NEG="眉毛糊成一片，头发结块粘连，发丝融合，塑料质感，蜡像，油腻反光，过度磨皮，死白皮肤，畸形五官，歪脸，脸崩，多手指，少手指，扭曲肢体，廉价布料，模糊，低分辨率，噪点，手绘平涂，2D二次元，卡通，Q版，厚涂，水印，文字，logo，多余肢体，粗制滥造，面部模糊，眼神涣散，穿模，锯齿，低模，卡通渲染";
+
+const ROLES={man1:["清冷仙侠男主","俊逸东方青年男子，立体锋利下颌线，深邃琥珀眼眸，冷白通透肤色，五官精致不女相，长发墨黑飘逸，发尾微卷，清冷俊逸，站姿挺拔"],man2:["飒爽战斗男主","凌厉东方青年男子，剑眉星目，眼神锐利，身形挺拔有力量感，高束马尾，衣摆与披风扬起，战斗姿态，气场强烈"],girl1:["清冷仙门女主","绝美东方女子，精致柔和轮廓，灵动眼眸，唇色淡雅，肤色通透，柔顺长发，纤细自然眉形，优雅清冷，气质出尘"],girl2:["魔族御姐女主","冷艳东方女子，狭长凤眼，红唇，暗紫高马尾，气场强大，眉眼锋利，身形修长，妩媚而危险"],boy:["少年弟子","俊朗青涩东方少年，五官干净，短发发丝利落，眼神清澈，少年感十足"],elder:["长老师尊","儒雅老者，面容慈和，白发长眉纹理清晰，长须，宽大道袍，气度沉稳"]};
+
+const CLOTH={robe:["素色仙侠长袍","哑光天青色丝绸长袍，暗纹云纹刺绣，银线镶边，宽袖，飘逸白纱内衬"],dress:["重工刺绣长裙","绯色织金长裙，凤凰纹样刺绣，珍珠腰链，多层薄纱飘带"],armor:["铠甲战袍","黑金轻便战甲，雕花护肩，皮质束腰，暗纹披风，金属冷光"],demon:["魔族劲装","暗紫玄色劲服，暗纹魔纹，黑色轻甲，红晶配饰，利落剪裁"],gauze:["轻纱仙裙","半透烟霞轻纱，渐变粉蓝，玉石发饰，细飘带，轻盈多层衣摆"]};
+
+const SHOTSUF={"全身立绘":"全身站姿，居中构图，角色完整不裁切，干净玄幻背景","半身眉眼特写":"半身构图，聚焦眉眼，浅景深，背景虚化，柔和侧光","三视图（正/侧/背）":"角色三视图，正面视图、侧面视图、背面视图并排展示，同一人物统一服装发型，纯色灰背景，无光影干扰，便于资产复用","表情集":"同一角色多种表情：平静、微笑、惊讶、悲伤、坚定，并排排列，统一背景"};
+
+const SCENES={hall:["仙门大殿","宏伟古风仙门大殿，白玉台阶，雕花廊柱，悬浮玉石灯盏，云雾缭绕，远景山峦"],valley:["云雾山谷","幽静仙侠山谷，古松，溪流，发光灵草，薄雾弥漫，岩石青苔细节"],top:["星空高台","悬空石质高台，漫天星河，月光冷调，石台刻有古老符文，微风扰动云雾"],altar:["魔界祭坛","暗黑石质祭坛，猩红晶石，暗红火焰，雾气翻涌，压迫感构图"],rain:["雨夜霓虹巷","雨后都市小巷，地面反射蓝色霓虹，远处模糊车灯，轻雾氛围"],path:["古林秘境","古木参天，藤蔓垂落，地面铺满落叶，斜射光束穿透树冠"]};
+
+const VIDEOS={idle:["对话微动","保持人物五官、发型、服装完全不变，只有轻微自然动作，缓慢眨眼，发丝与衣摆随风轻轻飘动，镜头平稳缓慢推进，不扭曲面部，光影保持一致"],battle:["战斗动态","人物快速动作，衣摆长发随风飞扬，武器微光，适度动态模糊，镜头跟随，张力强，面部保持稳定"],push:["缓慢推镜","镜头缓慢向前推进，环境雾气流动，角色情绪内敛，柔光包裹，慢镜头节奏"],flow:["飘带流动","长发与飘带随风缓慢流动，衣摆轻扬，角色静立，镜头环绕半周，体积光渐强"]};
+
+const TABS=[["pWork","工作台","🎬"],["pChar","角色","🧍"],["pScene","场景","🏞️"],["pVideo","视频","🎞️"],["pLib","模板","📋"],["pSet","设置","⚙️"]];
+
+function buildNav(){
+ document.getElementById('nav').innerHTML=TABS.map(([id,n])=>`<button class="tab" data-t="${id}">${n}</button>`).join('');
+ document.getElementById('bnav').innerHTML=TABS.map(([id,n,ic])=>`<button data-t="${id}"><span class="ic">${ic}</span>${n}</button>`).join('');
+ document.querySelectorAll('[data-t]').forEach(el=>el.onclick=()=>go(el.dataset.t));
+}
+function go(id){
+ document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===id));
+ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===id));
+ document.querySelectorAll('.bnav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function initSel(){
+ document.getElementById('chRole').innerHTML=Object.entries(ROLES).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('');
+ document.getElementById('chCloth').innerHTML=Object.entries(CLOTH).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('');
+ document.getElementById('scPreset').innerHTML=Object.entries(SCENES).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('');
+ document.getElementById('vdPreset').innerHTML=Object.entries(VIDEOS).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('');
+ fillChar();fillScene();fillVideo();
+}
+function fillChar(){
+ const r=ROLES[document.getElementById('chRole').value],c=CLOTH[document.getElementById('chCloth').value],s=SHOTSUF[document.getElementById('chShot').value];
+ document.getElementById('chPos').value=`${PREFIX}，${r[1]}，${c[1]}，${s}`;
+ document.getElementById('chNeg').value=NEG;
+}
+function fillScene(){
+ const s=SCENES[document.getElementById('scPreset').value],l=document.getElementById('scLight').value,d=document.getElementById('scDesc').value.trim(),w=document.getElementById('scWho').value;
+ document.getElementById('scPos').value=`${PREFIX}，${s[1]}，${l}，${w==='无人空景'?'画面无人物，一个场景一张图':'画面含人物，一个场景一张图'}，${d||'写实电影感，高反差阴影'}`;
+ document.getElementById('scNeg').value=NEG;
+}
+function fillVideo(){
+ const v=VIDEOS[document.getElementById('vdPreset').value];
+ document.getElementById('vdPrompt').value=`${v[1]}，运动幅度 ${document.getElementById('mv').value}，${document.getElementById('vdDur').value}，${document.getElementById('vdRatio').value}，3D国漫CG渲染，流畅画面，光影统一`;
+}
+
+let lastShots=[];
+async function genScript(){
+ const idea=document.getElementById('idea').value.trim();
+ if(!idea){toast('先输入一句创意');return;}
+ const payload={idea,theme:document.getElementById('theme').value,style:document.getElementById('style').value,eps:document.getElementById('eps').value,bg:document.getElementById('bg').value,core:document.getElementById('core').value,ref:document.getElementById('refv').value};
+ setMeta('生成中…');
+ try{
+  const r=await fetch('/api/script',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const d=await r.json();
+  if(!d||!d.title) throw new Error('empty');
+  renderScript(d); setMeta('已由模型生成'); toast('剧本生成完成');
+ }catch(e){
+  renderDemo(idea); setMeta('本地模板演示（后端未启用）'); toast('后端未配置，已用本地模板');
+ }
+}
+function setMeta(t){document.getElementById('scriptMeta').textContent=t}
+
+function renderScript(d){
+ const out=document.getElementById('scriptOut');
+ let txt=`【剧集】${d.title}\n\n【世界观】${d.world||''}\n\n【人物卡】\n`;
+ (d.characters||[]).forEach(c=>{txt+=`· ${c.name}（${c.role||''}）：${c.look||''}｜性格：${c.persona||''}\n`});
+ txt+=`\n【分镜】\n`;
+ (d.shots||[]).forEach(s=>{txt+=`镜号${s.no}｜${s.lens||''}｜${s.duration||''}\n画面：${s.desc||''}\n台词：${s.line||'—'}\n运镜：${s.move||''}\n\n`});
+ out.style.display='block'; out.textContent=txt;
+ lastShots=d.shots||[];
+ renderShots(lastShots);
+}
+function renderShots(shots){
+ const box=document.getElementById('shots');
+ if(!shots.length){box.innerHTML='';return;}
+ box.innerHTML=shots.map((s,i)=>`
+  <div class="shot">
+   <div class="top"><span>分镜 ${s.no||i+1}</span><span class="tags">${s.lens||''} · ${s.duration||''} · ${s.move||''}</span></div>
+   <p>${s.desc||'（无画面描述）'}</p>
+   <p class="line">${s.line?'台词：'+s.line:'无台词'}</p>
+   <div class="btns">
+    <button class="sec" onclick="copyShot(${i})">复制该镜 Prompt</button>
+    <button class="sec" onclick="go('pChar')">配角色</button>
+    <button class="sec" onclick="this.closest('.shot').remove()">删除</button>
+   </div>
+  </div>`).join('');
+}
+function copyShot(i){
+ const s=lastShots[i]; if(!s){toast('无数据');return;}
+ const t=`${PREFIX}，${s.desc||''}，${s.lens||''}，${s.move||''}，16:9，3D国漫CG，电影构图\n\n负面：${NEG}`;
+ copyPlain(t);
+}
+function addBlankShot(){
+ const n=document.querySelectorAll('#shots .shot').length+1;
+ const div=document.createElement('div'); div.className='shot';
+ div.innerHTML=`<div class="top"><span>分镜 ${n}</span><span class="tags">待填写</span></div><p>手动分镜，请自行填写画面描述</p><div class="btns"><button class="sec" onclick="this.closest('.shot').remove()">删除</button></div>`;
+ document.getElementById('shots').appendChild(div);
+}
+function renderDemo(idea){
+ lastShots=[
+  {no:1,lens:"远景",duration:"6s",move:"稳定跟拍",desc:"星海遗迹，云雾散开，主角独行于石阶之上，冷色逆光",line:"旁白：在世界的尽头，有一片被遗忘的星海。"},
+  {no:2,lens:"中景",duration:"8s",move:"缓慢推镜",desc:"灵族少女转身，长发与薄纱飘带被风吹起，柔光包裹",line:"少女：你也是来找答案的吗？"},
+  {no:3,lens:"特写",duration:"6s",move:"推镜",desc:"主角眼神由迷茫转为坚定，掌心浮起微光，蓝色边缘光",line:"主角：我不会再退缩。"},
+  {no:4,lens:"广角",duration:"9s",move:"环绕",desc:"异能爆发，能量环扩散，衣摆与长发飞扬，地面碎石悬浮",line:""},
+  {no:5,lens:"远景",duration:"10s",move:"拉镜",desc:"两人并肩走入秘境深处，体积光穿透雾层",line:"旁白：旅程，才刚刚开始。"}
+ ];
+ renderScript({title:"《星海遗梦》",world:idea+"。东方玄幻世界，冷峻而唯美。",characters:[{name:"琳",role:"主角",look:"人类少女，长发及腰，浅纱衣裙，星尘吊坠",persona:"温柔、勇敢、坚韧"},{name:"霂",role:"引路者",look:"灵族，银发，眼瞳泛蓝光，轻甲长袍",persona:"神秘、克制"}],shots:lastShots});
+}
+function copyAll(){
+ const t=lastShots.map(s=>`分镜${s.no}｜${s.lens}｜${s.duration}\n画面：${s.desc}\n台词：${s.line||'—'}\n运镜：${s.move}`).join('\n\n')||document.getElementById('shots').innerText;
+ copyPlain(t);
+}
+
+function buildAssets(){
+ const items=["星尘吊坠","旅行笔记本","古老罗盘","回忆药剂","天空之城","迷雾森林","星之湖","遗忘遗迹","主角立绘","三视图","表情集","服装集"];
+ document.getElementById('assetBar').innerHTML=items.map(n=>`<div class="asset"><div class="ph"></div><span>${n}</span></div>`).join('')
+ +`<div class="asset"><div class="ph" style="display:flex;align-items:center;justify-content:center;border:1px dashed var(--bd)">＋</div><span>新建</span></div>`;
+}
+
+function buildLib(){
+ const blocks=[["全局通用前缀",PREFIX],["全局负面词",NEG],["角色模板",Object.values(ROLES).map(r=>r[0]+"："+r[1]).join("\n\n")],["服装模板",Object.values(CLOTH).map(r=>r[0]+"："+r[1]).join("\n\n")],["场景模板",Object.values(SCENES).map(r=>r[0]+"："+r[1]).join("\n\n")],["镜头后缀",Object.entries(SHOTSUF).map(([k,v])=>k+"："+v).join("\n\n")],["视频指令",Object.values(VIDEOS).map(r=>r[0]+"："+r[1]).join("\n\n")]];
+ document.getElementById('libBox').innerHTML=blocks.map((b,i)=>`<div style="margin-bottom:16px"><h2 style="font-size:13.5px;margin-bottom:6px">${b[0]}</h2><pre id="lb${i}">${b[1]}</pre><button class="sec" onclick="copyEl('lb${i}')">复制</button></div>`).join('');
+}
+
+async function checkApi(){
+ const el=document.getElementById('apiState');
+ try{
+  const r=await fetch('/api/script',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ping:true})});
+  if(r.status===501){el.textContent='后端已部署，但还没配模型密钥（去 Vercel 环境变量里填）';}
+  else if(r.ok){el.textContent='后端正常，可直接生成';}
+  else{el.textContent='后端返回 '+r.status;}
+ }catch(e){el.textContent='未检测到后端（当前为纯静态预览，生成走本地模板）';}
+ document.getElementById('setState').textContent=el.textContent;
+}
+function copyEl(id){const el=document.getElementById(id);copyPlain(el.value!==undefined?el.value:el.innerText);}
+function copyPlain(t){
+ const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('已复制')}catch(e){toast('请长按手动复制')}document.body.removeChild(a)};
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('已复制')).catch(fb)}else fb();
+}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(window.__tt);window.__tt=setTimeout(()=>t.classList.remove('on'),1700);}
+
+buildNav();initSel();buildLib();buildAssets();checkApi();go('pWork');
+document.querySelectorAll('#quickChips .chip').forEach(c=>c.onclick=()=>c.classList.toggle('on'));
+</script>
+</body>
+</html>
