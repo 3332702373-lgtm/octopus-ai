@@ -1,9 +1,15 @@
 /**
- * Vercel Serverless Function
+ * Vercel Edge Function
  * 路径：/api/script
  * 作用：把前端的「一句话创意」转成结构化剧本 + 分镜 JSON
  * 密钥只从这里读取环境变量，前端永远拿不到
  */
+
+export const config = {
+  runtime: "edge",
+};
+
+const ALLOW_ORIGIN = "https://3332702373-lgtm.github.io";
 
 const SYS_PROMPT = `你是专业3D国漫CG短剧编剧。请严格输出一个 JSON 对象，不要任何多余文字、不要 markdown 代码块。
 
@@ -39,7 +45,6 @@ JSON 结构必须为：
 
 function extractJSON(text) {
   if (!text) return null;
-  // 去掉 ```json 包裹
   let t = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
   const first = t.indexOf("{");
   const last = t.lastIndexOf("}");
@@ -52,37 +57,52 @@ function extractJSON(text) {
   }
 }
 
-module.exports = async (req, res) => {
-  res.setHeader("Cache-Control", "no-store");
+function corsHeaders() {
+  const h = new Headers();
+  h.set("Access-Control-Allow-Origin", ALLOW_ORIGIN);
+  h.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  h.set("Access-Control-Allow-Headers", "Content-Type");
+  h.set("Cache-Control", "no-store");
+  return h;
+}
 
+function json(status, obj, headers) {
+  return new Response(JSON.stringify(obj), {
+    status,
+    headers: Object.assign(corsHeaders(), headers || {}),
+  });
+}
+
+export default async function handler(req) {
   if (req.method === "OPTIONS") {
-    res.status(204).end();
-    return;
+    return new Response(null, { status: 204, headers: corsHeaders() });
   }
   if (req.method !== "POST") {
-    res.status(405).json({ error: "只接受 POST" });
-    return;
+    return json(405, { error: "只接受 POST" });
   }
 
   const key = process.env.LLM_API_KEY;
   const base = (process.env.LLM_BASE_URL || "https://api.deepseek.com/v1").replace(/\/+$/, "");
   const model = process.env.LLM_MODEL || "deepseek-chat";
 
-  const body = req.body || {};
+  let body = {};
+  try {
+    body = await req.json();
+  } catch (e) {
+    return json(400, { error: "请求体不是合法 JSON" });
+  }
+
   if (body.ping) {
-    res.status(200).json({ ok: true, configured: !!key, model });
-    return;
+    return json(200, { ok: true, configured: !!key, model });
   }
 
   if (!key) {
-    res.status(501).json({ error: "服务端未配置 LLM_API_KEY" });
-    return;
+    return json(501, { error: "服务端未配置 LLM_API_KEY" });
   }
 
   const idea = String(body.idea || "").slice(0, 2000);
   if (!idea) {
-    res.status(400).json({ error: "缺少创意内容" });
-    return;
+    return json(400, { error: "缺少创意内容" });
   }
 
   const userPrompt = [
@@ -95,9 +115,13 @@ module.exports = async (req, res) => {
     `视觉参考：${body.ref || "3D国漫写实CG，冷色月光，体积光"}`,
   ].join("\n");
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 35000);
+
   try {
     const upstream = await fetch(base + "/chat/completions", {
       method: "POST",
+      signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer " + key,
@@ -111,23 +135,22 @@ module.exports = async (req, res) => {
         ],
       }),
     });
+    clearTimeout(timeoutId);
 
     const raw = await upstream.text();
 
     if (!upstream.ok) {
-      res.status(upstream.status).json({
+      return json(upstream.status, {
         error: "上游模型返回错误",
         detail: raw.slice(0, 500),
       });
-      return;
     }
 
     let data;
     try {
       data = JSON.parse(raw);
     } catch (e) {
-      res.status(502).json({ error: "上游返回非 JSON", detail: raw.slice(0, 300) });
-      return;
+      return json(502, { error: "上游返回非 JSON", detail: raw.slice(0, 300) });
     }
 
     const content =
@@ -136,12 +159,15 @@ module.exports = async (req, res) => {
 
     const parsed = extractJSON(content);
     if (!parsed) {
-      res.status(200).json({ error: "模型输出无法解析为 JSON", raw: content.slice(0, 1200) });
-      return;
+      return json(200, { error: "模型输出无法解析为 JSON", raw: content.slice(0, 1200) });
     }
 
-    res.status(200).json(parsed);
+    return json(200, parsed);
   } catch (e) {
-    res.status(500).json({ error: "请求失败：" + String(e).slice(0, 200) });
+    clearTimeout(timeoutId);
+    if (e.name === "AbortError") {
+      return json(504, { error: "请求超时，模型响应太慢，请重试" });
+    }
+    return json(500, { error: "请求失败：" + String(e).slice(0, 200) });
   }
-};
+}

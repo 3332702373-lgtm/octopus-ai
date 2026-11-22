@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/api/script", "destination": "/script.js" }
+  ],
+  "functions": {
+    "script.js": { "runtime": "edge" }
+  }
+}
